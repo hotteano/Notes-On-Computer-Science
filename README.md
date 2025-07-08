@@ -1,5 +1,7 @@
 # Notes-On-Computer-Science
-This repository contains some notes in SUSTech/这个仓库包含了一些我在SUSTech学习的笔记
+This repository contains some notes in SUSTech
+
+这个仓库包含了一些我在SUSTech学习的笔记
 
 # 目录/Contents
 
@@ -9,4 +11,8 @@ This repository contains some notes in SUSTech/这个仓库包含了一些我在
 
 3.Other
 
-# 其余笔记在知乎上已经更新了一部分@hotteano / Some other notes have been updated on Zhihu, which is a Chinese website.
+# 说明/Hints
+
+其余笔记在知乎上已经更新了一部分@hotteano 
+
+Some other notes have been updated on Zhihu, which is a Chinese website.
