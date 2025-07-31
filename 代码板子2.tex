@@ -1,0 +1,985 @@
+\documentclass[12pt,a4paper,UTF16]{ctexbook}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry} % 页边距
+\usepackage{amsmath,amssymb}    % 数学公式
+\usepackage{graphicx}           % 图片插入
+\usepackage{booktabs}           % 专业表格
+\usepackage{multirow}            % 表格跨行
+\usepackage{listings}
+\usepackage{bussproofs}
+\usepackage{tikz}
+\usepackage{multirow}   % 合并行
+\usepackage{hhline}     % 绘制自定义水平线
+\usepackage{array}      % 调整列格式
+\usepackage[colorlinks=true]{hyperref} % 超链接
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{mathpartir}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\theoremstyle{plain}
+\newtheorem{theorem}{\indent Theorem}[section]
+\newtheorem{lemma}[theorem]{\indent Lemma}
+\newtheorem{note}[theorem]{\indent Notation}
+\newtheorem{proposition}[theorem]{\indent Proposition}
+\newtheorem{corollary}[theorem]{\indent 推论}
+\newtheorem{definition}{\indent Definition}[section]
+\newtheorem{example}{\indent Example}[section]
+\newtheorem{remark}{\indent Remark}[section]
+\newenvironment{solution}{\begin{proof}[\indent\bf Solution]}{\end{proof}}
+\renewcommand{\proofname}{\indent\bf Proof}
+\lstset{
+ language=c++, % 设置语言
+ basicstyle=\ttfamily, % 设置字体族
+ breaklines=true, % 自动换行
+ keywordstyle=\bfseries\color{Aquamarine}, % 设置关键字为粗体，颜色为 NavyBlue
+ morekeywords={}, % 设置更多的关键字，用逗号分隔
+ emph={self}, % 指定强调词，如果有多个，用逗号隔开
+    emphstyle=\bfseries\color{Rhodamine}, % 强调词样式设置
+    commentstyle=\itshape\color{black!50!white}, % 设置注释样式，斜体，浅灰色
+    stringstyle=\bfseries\color{PineGreen!90!black}, % 设置字符串样式
+    columns=flexible,
+    numbers=left, % 显示行号在左边
+    numbersep=2em, % 设置行号的具体位置
+    numberstyle=\footnotesize, % 缩小行号
+    frame=single, % 边框
+    framesep=1em % 设置代码与边框的距离
+}
+
+\title{\bf{代码板子：第二弹}}
+\author{陈彦桥}
+
+
+
+\begin{document}
+\maketitle
+
+\section{前言}
+本册主要包含一些模板题的代码板子，主要来源是本人的做题经历。
+
+\tableofcontents
+
+\chapter{动态规划}
+\section{如何考虑动态规划}
+\subsection{考虑状态}
+如何考虑题目中的状态？应该首先考虑如下内容：
+\begin{itemize}
+    \item 集合，也就是包含哪些元素
+    \item 属性，这些元素具有的属性：最大值、最小值、数量……
+\end{itemize}
+其中，我们重点考虑集合的表示：首先我们需要确定集合到底是什么，原本集合的元素？选法？还是值？然后，我们
+要确定我们的维度的含义。常见的$f[i][j]$可以表示：
+\begin{itemize}
+    \item 下标不超过i，总属性也不超过j的各种选法
+    \item 左边界在i，右边界在j的元素
+\end{itemize}
+等等，以此类推，需要做题积累经验。
+\subsection{考虑状态转移}
+考虑特定的某一个状态，讨论所有转移到该状态的前置状态。此时，我们进行的是集合的划分，将当前的集合划分为若干
+更小的集合，使得前面计算过的集合能够用于计算当前的状态。需要注意，我们不一定只能通过循环求出结果，也可以
+使用递归的方法，也就是记忆化搜索。
+\paragraph{}如何得到状态递推？或者说，如何找一些前置集合，使得能够产生递推关系？我们可以考虑比较小规模的问题，
+然后进行分类讨论，以此得到一些不变的性质；或者，我们可以拿出代表对象，通过对对象位置、大小等性质的讨论和比较
+进行分类，从而得到更小的子问题。总而言之，我们需要找到当前比当前维度更小的子问题，这一问题通常是通过数学计算
+和分类讨论得到的。
+\paragraph{}如果需要维护最大值，我们首先要将其旧值进行比较。对于背包问题，我们常常是讨论选不选当前物品，进而
+将不选对应到上一个$f[i-1][j]$，将选该物品对应到$f[i-1][j-w[i]] + w[i]$。在其它问题中也可以类似地找到类似的
+讨论对象。例如在数位dp中，上一个选择会影响下一个选择，但是我们只需要考虑当前选择对于选择之前状态的限制以及影响，
+就可以很好的找到递推公式。
+\section{背包DP}
+\subsection{0-1背包问题}
+\begin{lstlisting}
+//二维版本
+int knapsack(vector<int>& weights,vector<int>& values, int W) 
+{
+int n = weights.size();
+//初始化略
+vector<vector<int>> dp(W + 1, vector<int>(n));
+for (int i = 0; i < n; ++i) {
+    for (int j = weights[i]; j <= W; j++) {
+        dp[i][j]=max(dp[i][j],dp[i-1][j-weights[i-1]]+values[i-1]);
+    }
+}
+return dp[W][n - 1];
+}
+\end{lstlisting}
+\begin{lstlisting}
+//一维版本
+int knapsack(vector<int>& weights,vector<int>& values, int W) 
+{
+int n = weights.size();
+vector<int> dp(W + 1, 0);
+for (int i = 0; i < n; ++i) {
+    for (int w = W; w >= weights[i]; --w) {
+        //逆序遍历保证每一个物品只选择一遍
+        dp[w] = max(dp[w],dp[w - weights[i]] + values[i]);
+    }
+}
+return dp[W];
+}
+\end{lstlisting}
+
+\subsection{完全背包问题}
+\begin{lstlisting}
+//枚举版本
+int knapsack(vector<int>& weights,vector<int>& values, int W) 
+{
+int n = weights.size();
+//初始化略
+vector<vector<int>> dp(W + 1, vector<int>(n + 1));
+for (int i = 1; i <= n; ++i) {
+    for (int j = 0; j <= W; ++j) {
+        for(int k = 0; k * weights[i] <= j; ++k)
+            dp[i][j]=max(dp[i][j],dp[i][j-k * weights[i]]+values[i] * k);
+    }
+}
+return dp[W][n];
+}
+\end{lstlisting}
+注意到，$dp[i][j] = MAX(dp[i-1][j], dp[i-1][j-w]+v, dp[i-1][j-2w]+2v, \cdots, dp[i-1][j-mw]+mv)$中，后面
+的$dp[i-1][j-w]+v, dp[i-1][j-2w]+2v, \cdots, dp[i-1][j-mw]+mv$与$dp[i][j-w]$十分相似，如下：
+\begin{align*} 
+    dp[i][j-w] = MAX(dp[i-1][j-w],  \cdots, dp[i-1][j-(m-1)w]+(m-1)v)
+\end{align*}
+与上式仅差一个$v$， 而同时加一个值不影响最大值，从而注意到
+\begin{align*} 
+    dp[i][j] = max(dp[i-1][j], dp[i-1][j-w]+v)
+\end{align*}
+综上有优化代码：
+\begin{lstlisting}
+//优化版本
+int knapsack(vector<int>& weights,vector<int>& values, int W) 
+{
+int n = weights.size();
+//初始化略
+vector<vector<int>> dp(W + 1, vector<int>(n + 1));
+for (int i = 1; i <= n; ++i) {
+    for (int j = 0; j <= W; ++j) {
+      dp[i][j] = dp[i-1][j];
+      if(j >= weights[i])dp[i][j]=max(dp[i][j],dp[i][j-weights[i]]+values[i]);
+    }
+}
+return dp[W][n];
+}
+\end{lstlisting}
+\subsection{多重背包问题}
+\begin{lstlisting}
+//枚举版本
+int knapsack(vector<int>& num, vector<int>& weights,vector<int>& values, int W) 
+{
+int n = weights.size();
+//初始化略
+vector<vector<int>> dp(W + 1, vector<int>(n + 1));
+for (int i = 1; i <= n; ++i) {
+    for (int j = 0; j <= W; ++j) {
+        for(int k = 0; k * weights[i] <= j && k <= num[i]; ++k)
+            dp[i][j]=max(dp[i][j],dp[i][j-k * weights[i]]+values[i] * k);
+    }
+}
+return dp[W][n];
+}
+\end{lstlisting}
+我们尝试优化上面的代码，注意到$
+dp[i][j] = MAX(dp[i-1][j], dp[i-1][j-w]+v, \cdots, dp[i-1][j-s[i]*w]+s[i]*v)$以及$
+dp[i][j-w] = MAX(dp[i-1][j-w],  \cdots, dp[i-1][j-s[i]*w]+(s[i]-1)*v, dp[i-1][j-(s[i]+1)*w]+s[i]*v)$
+这里，与完全背包不同的是，我们的第二个式子最后会多出一项$dp[i-1][j-(s[i]+1)*w]+s[i]*v$， 这是因为，此时我们有选择
+的上限，使得我们无法对齐尾部这一项（第一个式子的物品数量不能再加一以对齐了）。因此，这样优化是不行的。所以我们要
+考虑其它的办法。
+\paragraph{}我们考虑倍增法，考虑小于等于s[i]的每个数的二进制编码，我们将“选k个物品”转化为“在数个二进制位中选任意个，且
+表示的这个数的大小不超过s[i]”，每一个位的“价值”就是二的任意次幂，这样我们就可以将问题转化为“二进制位的0-1背包问题”，
+而这个二进制位的长度是$log(max(s[i]))$，从而我们避免了从0到s[i]枚举每一个数字。
+\begin{lstlisting}
+#include<iostream>
+using namespace std;
+const int N=11010,M=2010;
+int n,m;
+int v[N],w[N];
+int f[M];
+int main()
+{
+    cin>>n>>m;
+    int cnt=1;
+    for(int i=1;i<=n;i++){//拆分打包
+        int a,b,s;
+        cin>>a>>b>>s;
+        int k=1;
+        while(k<=s){
+            v[cnt]=a*k;
+            w[cnt]=b*k;
+            s-=k;
+            k*=2;
+            cnt++;//将s[i]个物品拆分为1个，2个，4个……分别打包为一个物品
+            //最终就是在打包好的物品中进行0-1背包问题，从而保证了正确性，因为二进制
+            //可以表示小于编码长度的所有整数
+        }
+        if(s>0){
+            v[cnt]=s*a;
+            w[cnt]=s*b;
+            cnt++;
+        }
+    }
+    for(int i=1;i<=cnt;i++){
+        for(int j=m;j>=v[i];j--)
+        {
+            f[j]=max(f[j],f[j-v[i]]+w[i]);
+        }
+    }
+    cout<<f[m]<<endl;
+    return 0;
+}
+\end{lstlisting}
+\subsection{分组背包问题}
+\begin{lstlisting}
+int knapsack(vector<vector<int>>& weights, vector<vector<int>>& values, vector<int>& nums,int W) 
+{
+int n = weights.size();
+//初始化略
+vector<int> dp(W + 1);
+for (int i = 1; i <= n; ++i) {
+    for (int j = W; j >= 0; --j) {
+        for(int k = 0; k < nums[i]; ++k){
+            if(weights[i][k] <= j)dp[j]=max(dp[j],dp[j-weights[i][k]]+values[i][k]);
+        }//要么从该组选一个，要么不选
+    }
+}
+return dp[W];
+}
+\end{lstlisting}
+
+\section{线性dp}
+\subsection{数字三角形}
+
+数字三角形就是典型的移动类型问题，只需要计算出上一个位置的最大特征，就可以递推下一个状态。
+\begin{lstlisting}
+#include <iostream>
+using namespace std;
+const int N = 510;
+int n;
+int a[N][N];
+int f[N][N];
+int main () {
+    cin >> n;
+    for (int i = 1;i <= n;i++) {
+        for (int j = 1;j <= i;j++) cin >> a[i][j];
+    }
+    for (int i = 1;i <= n;i++) f[n][i] = a[n][i];
+    for (int i = n - 1;i >= 1;i--) {
+        for (int j = 1;j <= i;j++) {
+            f[i][j] = max (f[i + 1][j],f[i + 1][j + 1]) + a[i][j];
+        }
+    }
+    cout << f[1][1] << endl;
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{最长上升子序列}
+\begin{lstlisting}
+//朴素dp
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        int l=nums.size();
+        vector<int>dp(l);//dp[i]表示以i结尾的递增序列长度
+        dp[0]=1;
+        for(int i=0;i<l;i++){
+            dp[i]=1;
+            for(int j=0;j<i;j++){
+                if(nums[i]>nums[j]){
+                    dp[i]=max(dp[i],dp[j]+1);
+                }
+            }
+        }
+        int MAX=INT_MIN;
+        for(int i=0;i<l;i++){
+            MAX=max(dp[i],MAX);
+        }
+        return MAX;
+    }
+};
+\end{lstlisting}
+\begin{lstlisting}
+//线段树优化，解决间隔不超过k的递增最长子序列
+class Solution {
+    vector<int> max;
+
+    void modify(int o, int l, int r, int i, int val) {
+        if (l == r) {
+            max[o] = val;
+            return;
+        }
+        int m = (l + r) / 2;
+        if (i <= m) modify(o * 2, l, m, i, val);
+        else modify(o * 2 + 1, m + 1, r, i, val);
+        max[o] = std::max(max[o * 2], max[o * 2 + 1]);
+    }
+
+    // 返回区间 [L,R] 内的最大值
+    int query(int o, int l, int r, int L, int R) { // L 和 R 在整个递归过程中均不变，将其大写，视作常量
+        if (L <= l && r <= R) return max[o];
+        int res = 0;
+        int m = (l + r) / 2;
+        if (L <= m) res = query(o * 2, l, m, L, R);
+        if (R > m) res = std::max(res, query(o * 2 + 1, m + 1, r, L, R));
+        return res;
+    }
+
+public:
+    int lengthOfLIS(vector<int> &nums, int k) {
+        int u = *max_element(nums.begin(), nums.end());
+        max.resize(u * 4);
+        for (int x: nums) {
+            if (x == 1) modify(1, 1, u, 1, 1);
+            else {
+                int res = 1 + query(1, 1, u, std::max(x - k, 1), x - 1);
+                modify(1, 1, u, x, res);
+            }
+        }
+        return max[1];
+    }
+};
+\end{lstlisting}
+\newpage
+\subsection{最长公共子序列}
+\begin{lstlisting}
+class Solution {
+public:
+    int longestCommonSubsequence(string text1, string text2) {
+        int l=text1.length();
+        int r=text2.length();
+        int dp[l+1][r+1];//dp[i][j]表示，第一个字符串前i个和第二个字符串前j个字母的最长公共序列
+        for(int i=0;i<=l;i++)
+        {
+            dp[i][0]=0;
+        }
+        for(int i=0;i<=r;i++)
+        {
+            dp[0][i]=0;
+        }
+        for(int i=1;i<=l;i++)
+        {
+            for(int j=1;j<=r;j++)
+            {
+                if(text1[i-1]==text2[j-1]){dp[i][j]=dp[i-1][j-1]+1;}
+                else{dp[i][j]=max(dp[i-1][j],dp[i][j-1]);}
+            }
+        }
+        return dp[l][r];
+    }
+};
+\end{lstlisting}
+\subsection{字符串编辑距离}
+\begin{lstlisting}
+class Solution {
+public:
+    int minDistance(string word1, string word2) {
+        int n = word1.length();
+        int m = word2.length();
+
+        // 有一个字符串为空串
+        if (n * m == 0) return n + m;
+
+        // DP 数组
+        vector<vector<int>> D(n + 1, vector<int>(m + 1));
+
+        // 边界状态初始化
+        for (int i = 0; i < n + 1; i++) {
+            D[i][0] = i;
+        }
+        for (int j = 0; j < m + 1; j++) {
+            D[0][j] = j;
+        }
+
+        // 计算所有 DP 值
+        // 对于A的前i个字符和B的前j个字符，若最后一个字符相同，那么直接用前i-1和前j-1的编辑距离
+        // 如果最后一个字符不同，那么只需要修改一个字符即可
+        // 对于其它情况，至少需要增加一次编辑距离（也就是插入一个字符）
+        for (int i = 1; i < n + 1; i++) {
+            for (int j = 1; j < m + 1; j++) {
+                int left = D[i - 1][j] + 1;
+                int down = D[i][j - 1] + 1;
+                int left_down = D[i - 1][j - 1]; //暂存防止意外改变原始值
+                if (word1[i - 1] != word2[j - 1]) left_down += 1;
+                D[i][j] = min({left, down, left_down});
+
+            }
+        }
+        return D[n][m];
+    }
+};
+\end{lstlisting}
+\begin{remark}
+    可以发现，两个字符串类型的dp问题通常可以使用“A的前i个XXX和B的前j个XXX”作为状态进行递推。
+\end{remark}
+
+
+\section{区间dp}
+\subsection{合并石子}
+\begin{lstlisting}
+#include <iostream>
+#include <cstring>
+using namespace std;
+const int N = 307;
+
+int a[N], s[N];
+int f[N][N];
+
+int main() {
+    int n;
+    cin >> n;
+
+    for (int i = 1; i <= n; i ++) {
+        cin >> a[i];
+        s[i] += s[i - 1] + a[i];
+    }
+
+    memset(f, 0x3f, sizeof f);
+    // 区间 DP 枚举套路：长度+左端点 
+    for (int len = 1; len <= n; len ++) { // len表示[i, j]的元素个数
+        for (int i = 1; i + len - 1 <= n; i ++) {
+            int j = i + len - 1; // 自动得到右端点
+            if (len == 1) {
+                f[i][j] = 0;  // 边界初始化
+                continue;
+            }
+
+            for (int k = i; k <= j - 1; k ++) { // 必须满足k + 1 <= j
+                f[i][j] = min(f[i][j], f[i][k] + f[k + 1][j] + s[j] - s[i - 1]);
+            }
+        }
+    }
+    cout << f[1][n] << endl;
+    return 0;
+}
+\end{lstlisting}
+
+\section{计数dp}
+\subsection{整数划分}
+\begin{lstlisting} 
+// f[i][j] = f[i - 1][j] + f[i][j - i]
+#include <iostream>
+
+using namespace std;
+
+const int N = 1e3 + 7, mod = 1e9 + 7;
+
+int f[N][N];
+
+int main() {
+    int n;
+    cin >> n;
+
+    for (int i = 0; i <= n; i ++) {
+        f[i][0] = 1; // 容量为0时，前 i 个物品全不选也是一种方案
+    }
+
+    for (int i = 1; i <= n; i ++) {
+        for (int j = 0; j <= n; j ++) {
+            f[i][j] = f[i - 1][j] % mod; // 特殊 f[0][0] = 1
+            if (j >= i) f[i][j] = (f[i - 1][j] + f[i][j - i]) % mod;
+        }
+    }
+
+    cout << f[n][n] << endl;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+#include <iostream>
+
+using namespace std;
+
+const int N = 1e3 + 7, mod = 1e9 + 7;
+
+int f[N];
+
+int main() {
+    int n;
+    cin >> n;
+
+
+    f[0] = 1; // 容量为0时，前 i 个物品全不选也是一种方案
+
+    for (int i = 1; i <= n; i ++) {
+        for (int j = i; j <= n; j ++) {
+            f[j] = (f[j] + f[j - i]) % mod;
+        }
+    }
+
+    cout << f[n] << endl;
+}
+\end{lstlisting}
+实际上，这就是著名的分拆数的计算方法。目前没有一个闭式公式用于计算这个数，但是可以通过渐进的方式估计
+该数的大小。
+
+\section{数位统计dp}
+\subsection{数位统计}
+关键在于分情况讨论，根据题目中的限制条件列出可能的情况进行递归。不妨定义以下两种情况
+\begin{itemize}
+    \item Dominate（压制）：高位恒小于上限，低位任取；
+    \item Equal（等于）：高位等于上限，低位讨论；
+\end{itemize}
+\begin{lstlisting}
+#include <iostream>
+#include <algorithm>
+#include <cmath>
+
+using namespace std;
+
+int get(int n) { // 求数n的位数
+    int res = 0;
+    while (n) res ++, n /= 10;
+    return res;
+}
+
+int count(int n, int i) { // 求从1到数n中数i出现的次数
+    int res = 0, dgt = get(n);
+
+    for (int j = 1; j <= dgt; ++ j) {
+    /* p为当前遍历位次(第j位)的数大小 <10^(右边的数的位数)>, Ps:从左往右(从高位到低位)
+        l为第j位的左边的数，r为右边的数，dj为第j位上的数 */
+        int p = pow(10, dgt - j), l = n / p / 10, r = n % p, dj = n / p % 10;
+
+   // ps:下文的xxx、yyy均只为使读者眼熟，并不严格只是三位数啊~ 然后后续的...就代表省略的位数啦~
+        /* 求要选的数在i的左边的数小于l的情况：
+（即视频中的xxx1yyy中的xxx的选法） --->
+    1)、当i不为0时 xxx : 0...0 ~ l - 1, 即 l * (右边的数的位数) == l * p 种选法
+    2)、当i为0时 由于不能有前导零 故xxx: 0....1 ~ l - 1, 
+                    即 (l-1) * (右边的数的位数) == (l-1) * p 种选法 */
+        if (i) res += l * p;
+        else res += (l - 1) * p;
+
+        /* 求要选的数在i的左边的数等于l的情况：(即视频中的xxx == l 时)
+    （即视频中的xxx1yyy中的yyy的选法）--->
+                        1)、i > dj时 0种选法
+                        2)、i == dj时 yyy : 0...0 ~ r 即 r + 1 种选法
+                        3)、i < dj时 yyy : 0...0 ~ 9...9 即 10^(右边的数的位数) == p 种选法 */
+        if (i == dj) res += r + 1;
+        if (i < dj) res += p;
+    }
+
+    return res; // 返回结果
+}
+
+int main() {
+    int a, b;
+    while (cin >> a >> b, a) { // 输入处理，直到输入为0停止
+        if (a > b) swap(a, b); // 预处理-->让a为较小值，b为较大值
+        for (int i = 0; i <= 9; ++ i) cout << count(b, i) - count(a - 1, i) << ' '; 
+        // 输出每一位数字(0 ~ 9)分别在[a,b]中出现的次数<利用前缀和思想：[l,r]的和=s[r] - s[l - 1]>
+        cout << endl; //换行
+    }
+
+    return 0; 
+}
+\end{lstlisting}
+
+\chapter{字符串专题}
+
+\subsection{KMP}
+\begin{lstlisting}
+// 在文本串 text 中查找模式串 pattern，返回所有成功匹配的位置（pattern[0] 在 text 中的下标）
+vector<int> kmp(const string& text, const string& pattern) {
+    int m = pattern.size();
+    vector<int> pi(m);
+    int cnt = 0;
+    for (int i = 1; i < m; i++) {
+        char b = pattern[i];
+        while (cnt && pattern[cnt] != b) {
+            cnt = pi[cnt - 1];
+        }
+        if (pattern[cnt] == b) {
+            cnt++;
+        }
+        pi[i] = cnt;
+    }
+
+    vector<int> pos;
+    cnt = 0;
+    for (int i = 0; i < text.size(); i++) {
+        char b = text[i];
+        while (cnt && pattern[cnt] != b) {
+            cnt = pi[cnt - 1];
+        }
+        if (pattern[cnt] == b) {
+            cnt++;
+        }
+        if (cnt == m) {
+            pos.push_back(i - m + 1);
+            cnt = pi[cnt - 1];
+        }
+    }
+    return pos;
+}
+\end{lstlisting}
+
+\subsection{Manacher算法}
+本算法用于高效解决回文串判定。
+\begin{lstlisting}
+class Solution {
+public:
+    int expand(const string& s, int left, int right) {
+        while (left >= 0 && right < s.size() && s[left] == s[right]) {
+            --left;
+            ++right;
+        }
+        return (right - left - 2) / 2;
+    }
+
+    string longestPalindrome(string s) {
+        int start = 0, end = -1;
+        string t = "#";
+        for (char c: s) {
+            t += c;
+            t += '#';
+        }
+        t += '#';
+        s = t;
+
+        vector<int> arm_len;
+        int right = -1, j = -1;
+        for (int i = 0; i < s.size(); ++i) {
+            int cur_arm_len;
+            if (right >= i) {
+                int i_sym = j * 2 - i;
+                int min_arm_len = min(arm_len[i_sym], right - i);
+                cur_arm_len = expand(s, i - min_arm_len, i + min_arm_len);
+            } else {
+                cur_arm_len = expand(s, i, i);
+            }
+            arm_len.push_back(cur_arm_len);
+            if (i + cur_arm_len > right) {
+                j = i;
+                right = i + cur_arm_len;
+            }
+            if (cur_arm_len * 2 + 1 > end - start) {
+                start = i - cur_arm_len;
+                end = i + cur_arm_len;
+            }
+        }
+
+        string ans;
+        for (int i = start; i <= end; ++i) {
+            if (s[i] != '#') {
+                ans += s[i];
+            }
+        }
+        return ans;
+    }
+};
+\end{lstlisting}
+
+\chapter{进阶数据结构}
+
+\subsection{ST表}
+\begin{lstlisting}
+#include<cstdio>
+#include<cmath>
+using namespace std;
+const int N=1e5+5;
+int n,m;
+int a[N];
+int st[N][25];
+int main()
+{
+	scanf("%d%d",&n,&m);
+	for(int i=1;i<=n;i++)scanf("%d",&a[i]);//读入数据
+	for(int i=1;i<=n;i++)st[i][0]=a[i];//初始化，区间长度为0
+	for(int j=1;1<<j<=n;j++){ //j的边界就是右边
+		for(int i=1;i+(1<<j)<=n+1;i++){ //i+j的边界是i+2^{j-1}+1
+			st[i][j]=max(st[i][j-1],st[i+(1<<(j-1))][j-1]);//转移处理ST表
+        }
+    }//读入预处理阶段，构建ST表
+	while(m--)
+	{
+		int l,r;
+		scanf("%d%d",&l,&r);
+		int k=__lg(r-l+1);//将区间长度分拆为两个2^k
+		printf("%d\n",max(st[l][k],st[r-(1<<k)+1][k])); //利用公式计算出左端点
+	} 
+	return 0;
+} 
+\end{lstlisting}
+
+\subsection{字典树}
+\begin{lstlisting}
+struct Node {
+    Node* son[26]{};
+    bool end = false;
+};
+
+class Trie {
+    Node* root = new Node();
+
+    int find(string word) {
+        Node* cur = root;
+        for (char c : word) {
+            c -= 'a';
+            if (cur->son[c] == nullptr) { // 道不同，不相为谋
+                return 0;
+            }
+            cur = cur->son[c];
+        }
+        // 走过同样的路（2=完全匹配，1=前缀匹配）
+        return cur->end ? 2 : 1;
+    }
+
+    void destroy(Node* node) {
+        if (node == nullptr) {
+            return;
+        }
+        for (Node* son : node->son) {
+            destroy(son);
+        }
+        delete node;
+    }
+
+public:
+    ~Trie() {
+        destroy(root);
+    }
+
+    void insert(string word) {
+        Node* cur = root;
+        for (char c : word) {
+            c -= 'a';
+            if (cur->son[c] == nullptr) { // 无路可走？
+                cur->son[c] = new Node(); // new 出来！
+            }
+            cur = cur->son[c];
+        }
+        cur->end = true;
+    }
+
+    bool search(string word) {
+        return find(word) == 2;
+    }
+
+    bool startsWith(string prefix) {
+        return find(prefix) != 0;
+    }
+};
+\end{lstlisting}
+
+\subsection{AC自动机}
+AC自动机是多字符串匹配的经典算法，是KMP思想在多字符上的运用。实际上，KMP就是链表形式的
+AC自动机。事实上，我们在这个算法中的核心目的，就是找到当前失配字符串后缀对应的最长前缀。
+该算法的关键在于建立fail数组，其中，某一个结点x的fail数组为：x->fa->fail->(若存在fa到x的字母，x的fail指向它)->否则继续查找fail。
+\paragraph{}为了压缩路径，我们可以直接设置转移表，每一个结点对应读到字符的转移路径。如何设置呢？我们
+只需要将当前节点的fail结点读到字符的fail转移结点一致即可。
+\begin{lstlisting}
+typedef struct TrieNode {
+    vector<TrieNode *> children;
+    bool isEnd;
+    TrieNode *fail;
+    TrieNode() {
+        this->children = vector<TrieNode *>(26, nullptr);
+        this->isEnd = false;
+        this->fail = nullptr;
+    }
+};
+
+class StreamChecker {
+public:
+    TrieNode *root;
+    TrieNode *temp;
+    StreamChecker(vector<string>& words) {
+        root = new TrieNode();
+        for (string &word : words) {
+            TrieNode *cur = root;
+            for (int i = 0; i < word.size(); i++) {
+                int index = word[i] - 'a';
+                if (cur->children[index] == nullptr) {
+                    cur->children[index] = new TrieNode();
+                }
+                cur = cur->children[index];
+            }
+            cur->isEnd = true;
+        }
+        root->fail = root;
+        queue<TrieNode *> q;
+        for (int i = 0; i < 26; i++) {
+            if(root->children[i] != nullptr) {
+                root->children[i]->fail = root;
+                q.emplace(root->children[i]);
+            } else {
+                root->children[i] = root;
+            }
+        }
+        while (!q.empty()) {
+            TrieNode *node = q.front();
+            q.pop();
+            node->isEnd = node->isEnd || node->fail->isEnd;
+            for (int i = 0; i < 26; i++) {
+                if(node->children[i] != nullptr) {
+                    node->children[i]->fail = node->fail->children[i];
+                    q.emplace(node->children[i]);
+                } else {
+                    node->children[i] = node->fail->children[i];
+                }
+            }
+        }
+
+        temp = root;
+    }
+    
+    bool query(char letter) {
+        temp = temp->children[letter - 'a'];
+        return temp->isEnd;
+    }
+};
+\end{lstlisting}
+
+\subsection{树状数组}
+\begin{lstlisting}
+class NumArray {
+private:
+    vector<int> nums;
+    vector<int> tree;
+
+    int prefixSum(int i) {
+        int s = 0;
+        for (; i > 0; i &= i - 1) { // i -= i & -i 的另一种写法，等价于lowbit；访问上一节点，如i=13，则迭代i=13-1 = 12，恰好是9-12这一段；
+                                    //继续访问，i=12-4=8，恰好是最左边的一段
+            s += tree[i];
+        }
+        return s;
+    }
+
+public:
+    NumArray(vector<int> &nums) : nums(nums), tree(nums.size() + 1) {
+        for (int i = 1; i <= nums.size(); i++) {
+            tree[i] += nums[i - 1];
+            int nxt = i + (i & -i); // 下一个关键区间的右端点，例如3，对应地就是3+(3&-3)=3+1=4
+            if (nxt <= nums.size()) {
+                tree[nxt] += tree[i];//关键区间加上当前位置的数
+            }
+        }
+    }//倍增法，用等长数组维护区间信息，访问下一关键结点，迭代i=i+lowbit(i)即可
+
+    void update(int index, int val) {
+        int delta = val - nums[index];//储存更新差值，从下到上传递
+        nums[index] = val;//先更新值
+        for (int i = index + 1; i < tree.size(); i += i & -i) {
+            tree[i] += delta;//注意，迭代从index + 1开始，因为原数组从零开始
+        }
+    }
+
+    int sumRange(int left, int right) {
+        return prefixSum(right + 1) - prefixSum(left);
+    }
+};
+\end{lstlisting}
+
+\subsection{线段树}
+\begin{lstlisting}
+template<typename T>
+class SegmentTree {
+    // 注：也可以去掉 template<typename T>，改在这里定义 T
+    // using T = pair<int, int>;
+
+    int n;
+    vector<T> tree;
+
+    // 合并两个 val
+    T merge_val(T a, T b) const {
+        return max(a, b); // **根据题目修改**
+    }
+
+    // 合并左右儿子的 val 到当前节点的 val
+    void maintain(int node) {
+        tree[node] = merge_val(tree[node * 2], tree[node * 2 + 1]);
+    }
+
+    // 用 a 初始化线段树
+    // 时间复杂度 O(n)
+    void build(const vector<T>& a, int node, int l, int r) {
+        if (l == r) { // 叶子
+            tree[node] = a[l]; // 初始化叶节点的值
+            return;
+        }
+        int m = (l + r) / 2;
+        build(a, node * 2, l, m); // 初始化左子树
+        build(a, node * 2 + 1, m + 1, r); // 初始化右子树
+        maintain(node);
+    }
+
+    void update(int node, int l, int r, int i, T val) {
+        if (l == r) { // 叶子（到达目标）
+            // 如果想直接替换的话，可以写 tree[node] = val
+            tree[node] = merge_val(tree[node], val);
+            return;
+        }
+        int m = (l + r) / 2;
+        if (i <= m) { // i 在左子树
+            update(node * 2, l, m, i, val);
+        } else { // i 在右子树
+            update(node * 2 + 1, m + 1, r, i, val);
+        }
+        maintain(node);
+    }
+
+    T query(int node, int l, int r, int ql, int qr) const {
+        if (ql <= l && r <= qr) { // 当前子树完全在 [ql, qr] 内
+            return tree[node];
+        }
+        int m = (l + r) / 2;
+        if (qr <= m) { // [ql, qr] 在左子树
+            return query(node * 2, l, m, ql, qr);
+        }
+        if (ql > m) { // [ql, qr] 在右子树
+            return query(node * 2 + 1, m + 1, r, ql, qr);
+        }
+        T l_res = query(node * 2, l, m, ql, qr);
+        T r_res = query(node * 2 + 1, m + 1, r, ql, qr);
+        return merge_val(l_res, r_res);
+    }
+
+public:
+    // 线段树维护一个长为 n 的数组（下标从 0 到 n-1），元素初始值为 init_val
+    SegmentTree(int n, T init_val) : SegmentTree(vector<T>(n, init_val)) {}
+
+    // 线段树维护数组 a
+    SegmentTree(const vector<T>& a) : n(a.size()), tree(2 << bit_width(a.size() - 1)) {
+        build(a, 1, 0, n - 1);
+    }
+
+    // 更新 a[i] 为 merge_val(a[i], val)
+    // 时间复杂度 O(log n)
+    void update(int i, T val) {
+        update(1, 0, n - 1, i, val);
+    }
+
+    // 返回用 merge_val 合并所有 a[i] 的计算结果，其中 i 在闭区间 [ql, qr] 中
+    // 时间复杂度 O(log n)
+    T query(int ql, int qr) const {
+        return query(1, 0, n - 1, ql, qr);
+    }
+
+    // 获取 a[i] 的值
+    // 时间复杂度 O(log n)
+    T get(int i) const {
+        return query(1, 0, n - 1, i, i);
+    }
+};
+
+int main() {
+    SegmentTree t(8, 0LL); // 如果这里写 0LL，那么 SegmentTree 存储的就是 long long 数据
+    t.update(0, 1LL << 60);
+    cout << t.query(0, 7) << endl;
+
+    vector<int> nums = {3, 1, 4, 1, 5, 9, 2, 6};
+    // 注意：如果要让 SegmentTree 存储 long long 数据，需要传入 vector<long long>
+    SegmentTree t2(nums); // 这里 SegmentTree 存储的是 int 数据
+    cout << t2.query(0, 7) << endl;
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Splay树}
+
+
+\end{document}
+
