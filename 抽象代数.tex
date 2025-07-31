@@ -1,0 +1,441 @@
+\documentclass[12pt,a4paper,UTF8]{ctexbook}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry} % 页边距
+\usepackage{amsmath,amssymb}    % 数学公式
+\usepackage{graphicx}           % 图片插入
+\usepackage{booktabs}           % 专业表格
+\usepackage{multirow}            % 表格跨行
+\usepackage{amsthm}
+\usepackage[colorlinks=true]{hyperref} % 超链接
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+%自定义宏
+%公式命令宏
+\theoremstyle{plain}
+\newtheorem{theorem}{\indent Theorem}[section]
+\newtheorem{lemma}[theorem]{\indent Lemma}
+\newtheorem{proposition}[theorem]{\indent Proposition}
+\newtheorem{corollary}[theorem]{\indent 推论}
+\newtheorem{definition}{\indent Definition}[section]
+\newtheorem{example}{\indent Example}[section]
+\newtheorem{remark}{\indent Remark}[section]
+\newenvironment{solution}{\begin{proof}[\indent\bf Solution]}{\end{proof}}
+\newtheorem{axiom}{\indent Axiom}[section]
+\renewcommand{\proofname}{\indent\bf Proof}
+% 快速输入数学符号
+\newcommand{\R}{\mathbb{R}}    % 实数集
+\newcommand{\C}{\mathbb{C}}    % 复数集
+\newcommand{\Z}{\mathbb{Z}}    % 整数集
+\newcommand{\Q}{\mathbb{Q}}    % 有理数集
+\newcommand{\N}{\mathbb{N}}    % 自然数集
+
+% 微分符号 (直立体)
+\newcommand{\diff}{\mathop{}\!\mathrm{d}} % 用法: \int f(x) \diff x
+
+% 概率期望/方差
+\newcommand{\E}{\mathbb{E}}    % 期望
+\newcommand{\Var}{\operatorname{Var}}    % 方差
+
+% 自动调整括号大小
+\newcommand{\paren}[1]{\left(#1\right)}   % 圆括号
+\newcommand{\bracket}[1]{\left[#1\right]} % 方括号
+\newcommand{\braces}[1]{\left\{#1\right\}} % 花括号
+
+% 向量/矩阵（粗体）
+\newcommand{\vb}[1]{\mathbf{#1}}          % 向量 \vb{v}
+\newcommand{\mat}[1]{\mathbf{#1}}         % 矩阵 \mat{A}
+\newcommand{\tran}{^{\mathsf{T}}}         % 转置 A\tran
+
+\title{\bf{Abstract Algebra}}        
+\author{陈彦桥\\
+        南方科技大学}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\chapter{群、环、体、域}
+\section{群}
+\subsection{群的定义}
+\begin{definition}[群]
+    若一个集合$G$定义了一个二元运算$\circ$，满足
+    \begin{itemize}
+        \item 运算封闭性：若$a,b \in G$，则$a\circ b\in G$;
+        \item 结合律：$(a\circ b)\circ c = a\circ (b\circ c)$;
+        \item 单位元：存在$e$使得对于$a\in G$，有$e\circ a = a\circ e = a$;
+        \item 逆元：存在$b:=a^{-1}$使得对于$a\in G$，有$a\circ a^{-1} = e$;
+    \end{itemize}
+    则$G$是一个群。
+\end{definition}
+通常，我们会省略写中间的运算符号，即$a\circ b = ab$。
+\begin{remark}
+    进一步，若满足交换律$a\circ b = b\circ a$，则称这个群是阿贝尔群（Abel Group）。
+\end{remark}
+对于代数结构没有特别好的一些结构，我们同样予以其命名：
+\begin{definition}[半群]
+    若一个集合$G$定义了一个二元运算$\circ$，满足
+    \begin{itemize}
+        \item 运算封闭性：若$a,b \in G$，则$a\circ b\in G$;
+        \item 结合律：$(a\circ b)\circ c = a\circ (b\circ c)$;
+    \end{itemize}
+    则$G$是一个半群（Semigroup）。
+\end{definition}
+\begin{remark}
+    进一步，若半群具有单位元，那么称之为幺半群（Monoid）
+\end{remark}
+\begin{definition}[阶]
+    群中元素的数量被称为阶。
+\end{definition}
+
+\subsection{群的基本性质}
+\begin{theorem}[基本性质]
+    以下的几条定理是不言而喻的：
+    \begin{itemize}
+        \item 群的单位元唯一。
+        \item 群的任意元素的逆元唯一。
+        \item 群具有消去律。（这由逆元的性质保证）
+    \end{itemize}
+\end{theorem}
+\begin{definition}[子群]
+    若集合H满足以下性质：
+    \begin{itemize}
+        \item 群$G$元素构成的集合的子集为$H$;
+        \item $H$满足$G$中运算的所有性质;
+    \end{itemize}
+    则$H$是$G$的子群，记为$H\leq G$。
+\end{definition}
+\begin{theorem}[子群的判定定理]
+    下述三个条件等价：
+    \begin{itemize}
+        \item $H\leq G$;
+        \item $\forall a,b\in G$，$ab\in H$且$a^{-1}\in H$;（平凡验证封闭性与逆元）
+        \item $\forall a,b\in G$，$ab^{-1}\in H$（或者$a^{-1}b\in H$）;（实用的推论）
+    \end{itemize}
+\end{theorem}
+\begin{definition}[群的积]
+    定义： 
+    \begin{align*} 
+        HK = \{hk|h\in H, k\in K\}
+    \end{align*} 
+\end{definition}
+将判定定理改述为上述语言得到：
+\begin{theorem}[子群的判定定理（改述版本）]
+    对于$H \subseteq G, H\ne \emptyset$，下述三个条件等价：
+    \begin{itemize}
+        \item $H\leq G$;
+        \item $H^2 \subseteq H$且$H^{-1}\subseteq H$;
+        \item $HH^{-1}\subseteq H$（或者$H^{-1}H\subseteq H$）;
+    \end{itemize}
+\end{theorem}
+\begin{definition}[平凡子群、真子群、生成群、生成系]
+    作出如下定义：
+    \begin{itemize}
+        \item 显然$G$的子群可以为其自身以及\{e\}，\{$e$\}被称为$G$的平凡子群。
+        \item 若$H\leq G$，且$H\leq G$，则$H$为$G$的真子群。
+        \item 若$M\subseteq G$，$\forall (M\subseteq H_i，H_i\leq G)$，$\bigcap_{i=1}^n H_i$被称为“$M$生成的子群”，记为$\langle M\rangle $。
+        \item 若$\langle M\rangle =G$，称$M$为G的一个生成系。
+        \item 若$|M|=1$且$M$为$G$的一个生成系，则$G$为循环群。
+        \item 由有限个元素生成的群为有限生成群。
+        \item 对于任意元素$a$，称$\langle a\rangle$的阶为元素$a$的阶，记为$o(a)$。
+        \item 群中所有元素阶的最小公倍数为群的方次数，记为$\exp(G)$。
+    \end{itemize}
+\end{definition}
+\begin{remark}
+    实际上，“生成”可以理解为$M$的若干元素包含在若干个封闭的子群中，而这些子群的交恰好就是$M$中元素“能够”通过子群中运算得到的
+    “被生成的元素”。对于这些子群中的其它元素，需要不属于$M$中的元素通过运算生成，因此也就自然不属于$M$的“生成”结果。
+\end{remark}
+\subsection{陪集（Coset）}
+接下来，我们进入群理论中第一个非常重要的部分：陪集。
+\begin{definition}[右（左）陪关系]
+    设$H\leq G$，定义等价关系$a\overset{l}{\sim}b$为
+    \begin{align*} 
+        \exists h\in H, a=bh.
+    \end{align*}
+    同样地可以定义$a\overset{r}{\sim}b$
+    \begin{align*} 
+        \exists h\in H, a=hb.
+    \end{align*}
+    注意到$a\overset{l}{\sim}b$意味着$a\in bH$，则$bH$为一个等价类。同理可以得到另一个等价类$Hb$。
+\end{definition}
+\begin{remark}
+    事实上，上述的等价关系阐明的是元素之间的转换关系。若一个元素可以通过一次左乘或者右乘某个子群中
+    的元素而变成群中的另一个。由于a,b是任意的，我们很容易得出一个直观的结论：$H$相当于一个待选的操作集合，
+    而整个群中的某个子集中的元素可以通过这些操作相互转化。一个不太恰当的比喻是，某些场所中的陪酒小姐，她可以
+    只服务某一个人群，我们总能够在这一群小姐中找到一位，服务了$a$以后就去服务$b$。这样，我们就建立了一个人群
+    的关系网络。而我们将要介绍的陪集，就是$H$要去陪的那些人。
+\end{remark}
+于是我们可以通过上述等价关系定义陪集：
+\begin{definition}[陪集]
+    若$H\leq G$，$a\in G$，形如$aH$（类似地，Ha）的集合被称为$H$的一个左（右）陪集。
+\end{definition}
+\begin{remark}
+    我们之前的remark中的比喻，可以用来解释陪集的定义：若b在陪集中，那么他和a有过相同的陪酒小姐。这样，他们之间就
+    存在一个中间人的关系。
+\end{remark}
+\begin{remark}
+    形式上，一个关键洞察是，陪集是对于群结构的一个划分，这个划分由确定的集合决定。群的元素被划分为若干个等价类，从而方便我们
+    进行研究。
+\end{remark}
+左陪集是等价类，因此群可以被分解为左陪集的无交并。
+\begin{theorem}
+    \begin{align*}
+    G = \dot{\bigcup}_{aH} aH
+    \end{align*}
+\end{theorem}
+\begin{remark}
+    这个定理表明，这一群陪酒小姐服务的对象是分成了几个群体的，有一些陪酒小姐服务高端人士，有一些陪酒小姐服务中产阶级，
+    有一些陪酒小姐则服务比较寒酸的人士。他们找的小姐的服务方针是不太一样的。这样，我们就可以通过小姐的档次分出群体中
+    所有人的档次了。
+\end{remark}
+\begin{definition}[指数]
+    $H$的左陪集的个数被称为$H$在$G$中的指数，记为$|G:H|$。
+\end{definition}
+注意到，$H$与其陪集存在双射，也就是
+\begin{align*}
+    \varphi:H\to aH 
+\end{align*}
+是双射。$H$一旦确定，陪集就是确定的。
+\begin{theorem}[拉格朗日定理]
+    $G$为有限群，$H\leq G$，则
+    \begin{align*} 
+        |G| = |G:H||H|
+    \end{align*} 
+\end{theorem}
+这个定理在无交并和双射的前置结论下是显然的。
+\begin{theorem}
+    有限群的任意元素的阶整除群的阶，即$a^{|G|} = e$。
+\end{theorem}
+这里，后面的结论在前面那个条件的结论下显然。但是前面那个条件是为什么呢？根据拉格朗日定理，取$H = \langle a\rangle$即可。
+\subsection{正规子群}
+在线性代数中，商空间对于我们解决子空间相关的问题至关重要。显然，商空间$V/W = \{\overline\alpha|\overline\alpha = \alpha + W, \alpha\in V\}$
+是$W$的一个关于加法的陪集。其中商空间中的运算被定义为$\overline{\alpha} + \overline{\beta} = \overline{\alpha + \beta}$，也就是$\alpha + W + \beta + W = (\alpha + \beta) + W$。
+我们想要将这一思想推广到群中，但是，显然我们必须要解决左陪集和右陪集不同的问题。
+\begin{theorem}
+    $H\leq G$，任意两个左陪集相乘仍然为左陪集的充要条件是左右陪集相等。
+\end{theorem}
+进一步，为了定义商群，我们定义正规子群
+\begin{definition}[正规子群]
+    $H\leq G$，若$\forall a$，$aH = Ha$，则$H$为$G$的正规子群，记为$H\trianglelefteq G$。
+\end{definition}
+\begin{remark}
+    我们继续用不正经的比喻来解释这一定义。首先，我们定义服务1和服务2（对应左陪和右陪），这样，某一个客人点了不同的服务，小姐的下一个客人
+    是可能不一样的。但是，若这是一个“正规”的场所，那么服务不应该有“不正经”的内容，应该表里如一，因此不论客人点哪个服务，下一位客人都是一样
+    的。
+\end{remark}
+\begin{theorem}[正规子群判定定理]
+    以下三个条件等价：
+    \begin{itemize}
+        \item $H\trianglelefteq G$;
+        \item $\forall a\in G,a^{-1}H a = H$;
+        \item $\forall a\in G,a^{-1}h a \in H$;
+    \end{itemize}
+    其中最后一个条件比较实用。
+\end{theorem}
+进一步我们定义商群：
+\begin{definition}[商群]
+    若$H\trianglelefteq G$，则H的陪集在乘法下构成群，称其为G关于H的商群，记为$G/H$。
+\end{definition}
+\begin{remark}
+很简单，$H$是小姐，拿着一批小姐名单去找人，找到的可不就是客户嘛。所以商群就是小姐的客户。
+\end{remark}
+\begin{remark}
+对于陪集，我们可以有一个类比认知：我们小学就学过的除法中，$a/c = b$，其中b称为商，我们发现，陪集被定义为$a = bH$，
+实际上就是说，$H$就是那个除数，它将群元素$a$的其它“结构”除掉，保持最本质的性质。这样，我们就不难理解为什么$H$是商群的
+单位元了：在同余类中，无论加上模数多少遍，元素仍然保持不变。这恰好就是单位元的性质。我们将这一不变性推广到更广泛的区域上去，
+就是我们的陪集。
+\end{remark}
+
+\section{同态与同构}
+\subsection{同态与同构的定义与性质}
+\begin{definition}[同态]
+    若映射
+    \begin{align*} 
+    \varphi:G_1\to G_2
+    \end{align*}
+    保持运算，即$\varphi(ab)=\varphi(a)\varphi(b)$，则$\varphi$是一个同态。若$\varphi$为单（满）射，则为单（满）同态。若为双射，那么称之为同构，记为$G_1 \cong G_2$。
+\end{definition}
+\begin{remark}
+同态表明，我可以将旧的经验转移到新的情境中，原有的群中的运算，可以分别将运算对象映射到像空间中再利用那里的运算得出结果。相当于运送建材，先在工厂用
+电钻拆开，然后拿到工地也能拿螺丝刀拧上。这就是同态，一个样。
+\end{remark}
+\begin{definition}[自同态]
+    若同态$\varphi$是
+    \begin{align*} 
+    \varphi:G\to G
+    \end{align*}
+    则称其为自同态，记$G$所有自同态的集合为$\mathrm{End}(G)$。同理记$\mathrm{Aut}(G)$为$G$全体自同构组成的集合。
+    注意到$\mathrm{Aut}(G)$组成一个群，而$\mathrm{End}(G)$是一个幺半群。这是显然的，因为同态不一定是双射，不一定可逆。
+\end{definition}
+\begin{definition}[同态的像与核]
+    定义$\varphi(G)$为$\varphi$的像，记为$\mathrm{im} \varphi$而单位元对应的原像定义为核，也就是
+    \begin{align*} 
+    \ker \varphi := \{a|\varphi(a) = e\}
+    \end{align*}
+    不难发现，商群的单位元就是$H$，因此若要验证一个同态是单的，只需要任取$H$中的元素，验证其被映射到像空间的单位元，并且验证
+    对于任意原空间中的元素，若其被映射到单位元，可以推出其属于$H$，就可以验证其单射性质；若要验证其满射，只需要取像空间中
+    任意元素，说明其在同态下存在原像（被作用的元素属于原空间）即可。
+\end{definition}
+同态是单射并不好验证，但是我们可以通过以下的等价条件进行验证：
+\begin{theorem}
+$\ker \varphi = \{e\}\Leftrightarrow \varphi $单
+\end{theorem}
+接下来我们将要介绍同构中非常关键且基础的一个定理：
+\begin{theorem}[同构基本定理]
+设$\varphi$是群同态，则
+\begin{align*} 
+    G/\ker \varphi \cong \mathrm{im} \varphi
+\end{align*}
+\end{theorem}
+\begin{definition}[平移]
+    定义$G$上的变换
+    \begin{align*} 
+    L(a):G \to G
+    \end{align*}
+    称$L(a)$为由$a$引起的左平移，同理可以定义右平移。
+\end{definition}
+\begin{theorem}[凯莱定理]
+任一群同构于某一集合上的变换群。
+\end{theorem}
+\begin{theorem}[凯莱定理（有限群）]
+任一群$G$同构于对称群$S_{|G|}$的某个子群。
+\end{theorem}
+\begin{proof} 
+    设$L(G)$是左平移的全体构成的$G$的全变换群$S(G)$的子集，定义
+    \begin{align*} 
+    L:G \to S(G)
+    \end{align*}
+    对于任意$a,b,g\in G$
+    \begin{align*} 
+    L(ab)g = (ab)g = a(bg) = L(a)(bg) = (L(a)L(b))g
+    \end{align*}
+    因此$L$是群同态。注意到$\mathrm{im}L = L(G)$，对于$L$而言，$L(a) = \mathrm{id}$ 当且仅当$a = e$，因此$\ker L = \{e\}$，因此由同态基本定理得到
+    \begin{align*} 
+    G\cong L(G)
+    \end{align*}
+    得证.
+\end{proof}
+\begin{remark}
+    凯莱定理事实上阐述了这样一件事情：任何抽象的群与某个置换群同构。这使得我们能够具体地研究群
+    的内部结构。由于变换群可以由具体的自然数的置换表示，我们的研究就会更加简单和容易。因此我们将
+    $L(G)$称为$G$的左正则表示，对应地，$R(G)$被称为右正则表示。
+\end{remark}
+实际上，在范畴论中，我们有更广泛的结论：
+\begin{theorem}[米田引理]
+设$\mathcal{C}$为局部小范畴，$X\in \mathcal{O}b$。设$F$为从任意$\mathcal{C}$到$\mathbb{SET}$的函子，存在从$Nat(h_X,F)$到集合
+$F(X)$的双射。且该双射为
+\begin{align*} 
+    \alpha \mapsto \alpha_X(\mathrm{id}_X)
+\end{align*}
+其逆映射把$u\in F(X)$映射到自然变换$\beta$，使得对于任意的$T\in \mathcal{O}b(\mathcal{C})$，都有
+\begin{align*} 
+    \beta_Y:Hom_{\mathcal{C}}(X,Y)\to F(Y)
+\end{align*}
+我们不会深入这一结论，因为这远远超出了本笔记的叙述“范畴”。
+\end{theorem}
+回到正题，我们直觉上愿意定义所谓的“典范”，以便于我们进行群结构的研究，因此我们将从原群到商群的同态记为：
+\begin{definition}[典范同态]
+    若$H\trianglelefteq G$，则易得
+    \begin{align*} 
+    \pi:G \to G/H
+    \end{align*}
+    是同态。这一同态被称为从$G$到$G/H$的典范同态。
+\end{definition}
+\begin{remark}
+    容易发现，由于$H$是正规子群，因此商群存在。典范同态保证从原来的群转换为商群的过程中保持运算，使得商群
+    的结构是良定义的。
+\end{remark}
+\begin{theorem}[第一同构定理]
+$H\trianglelefteq G$，在$G$到$G/H$典范同态下
+\begin{itemize}
+        \item $G$的包含$H$的子群与$G/H$的子群在典范同态下一一对应;
+        \item 上述一一对应下，正规子群对应正规子群;
+        \item 若$K\trianglelefteq G$且$K\supseteq H$，则
+              \begin{align*} 
+                G/K \cong (G/H)/(K/H)
+              \end{align*}
+\end{itemize}
+\end{theorem}
+\begin{remark}
+    这个定理表明，商运算保持正规性，低阶商群可以通过高阶商群构造。这一性质进一步强调了正规性的重要性。
+\end{remark}
+
+\begin{theorem}[第二同构定理]
+    设$G$是群，$H\trianglelefteq G$，$K\leq G$，那么以下结论成立：
+    \begin{itemize}
+        \item $HK\leq G, H\cap K \trianglelefteq K$;
+        \item $(HK)/H\cong K/(K\cap H)$
+    \end{itemize}
+\end{theorem}
+\begin{remark}
+    这一定理的证明是不难的。首先，只需要通过判定定理验证$HK$是子群，然后通过正规子群判定定理老老实实
+    验证正规子群。证明同构还是四步法：证明Well-Defined（证明运算性质与代表元选取无关，常见手法是通过
+    选取两个假设相等的元素，验证其像是否一定相等）、证明为群同态（保持运算）、证明单（核空间只有单位元）
+    、证明满（每个像对应原像）。这些基本的定理基本上都按照以上步骤进行，这是基本功。
+\end{remark}
+\begin{remark}
+    定理显然表明，积运算不保持正规性，交运算保持正规性；同时，子群积对正规子群的商同构于子群对子群交的商。
+\end{remark}
+
+\subsection{群的直积与直和}
+新群的构造可以通过简单的复合进行：
+\begin{definition}[直和]
+    设群$G_1,G_2$，由笛卡尔积得群$G_1\times G_2$，该集合在运算
+    \begin{align*} 
+    (a_1,b_1)(a_2,b_2) = (a_1a_2,b_1b_2)
+    \end{align*}
+    下保持群结构。称为群的（外）直和，记为$G_1\oplus G_2$，$G_1$和$G_2$称为$G_1\oplus G_2$的直和因子。
+\end{definition}
+我们常常反过来考虑：是否可以将一个群分解为多个群的直和？我们给出如下的等价判定条件：
+\begin{theorem}[群的直和分解判定]
+    设$G$是群，$H,K\trianglelefteq G$，$G=HK$，那么以下结论等价：
+    \begin{itemize}
+        \item 映射 
+        \begin{align*}
+            \sigma: H\oplus K \to G 
+        \end{align*}
+        是同构;
+        \item $G$的任意元素唯一表示为$H$和$K$元素的乘积;
+        \item $G$的单位元唯一表示为$H$和$K$元素的乘积;
+        \item $H\cap K$ = \{e\};
+    \end{itemize}
+\end{theorem}
+\begin{remark}
+    判定内容是直观的，这表明两个群负责不同维度的内容而不存在交集。事实上，从第四个结论就可以联想到线性代数中的
+    直和分解的内容，这在群中也是相同的。事实上，这与实际我们人工智能的分类也有很大关系：若一个事物的描述是可分的，
+    那么它一定是若干直和的结果。
+\end{remark}
+满足如上性质的$G$被称为$H$和$K$的（内）直和，记号相同。对于多个群的直和，我们同样可以证明上述四个定理，只需要使用
+归纳法进行验证即可。其中注意，第四个定理为$\forall i,H_i\cap(H_1\cdots \hat{H_i}\cdots H_n)=\{e\}$，其中$\hat{H_i}$
+表示去掉$H_i$。
+\begin{definition}[直积]
+    设$G$是群，$I$为集合的指标集（可以是无穷集合）。记
+    \begin{align*}
+         \prod_{i\in I}G_i
+    \end{align*}
+    为（外）直积。同样为集合的笛卡尔积，运算同样为按分量运算。显然，若I有限，其与直和无区别。但是在无限集情况下，二者不同。
+    该集合的一个自然的子集为$\{(\cdots,a_i,\cdots)|a_i\in G_i, \forall j \ne i, a_j = e_j\}$。
+\end{definition}
+存在一个映射将任一群映射到直积群中，当指标集有限，直和的任意元素都可以唯一地表示为像空间中的和（线性代数中，这被称为正交基），
+而无限集中则没有如上性质。
+
+\paragraph{}终于，我们结束了群的内容，接下来我们了解环的内容。事实上，环的内容有很多与群是类似的。
+
+\section{环}
+
+
+\section{体和域}
+
+\chapter{特殊的群}
+
+\chapter{环与数论}
+
+\chapter{域扩张与伽罗瓦理论}
+
+\chapter{模与格}
+
+\chapter{群表示论}
+
+
+
+
+\end{document}
